@@ -12,7 +12,7 @@ catalog.
 Current builds:
 - `sets/controlpanel/` — `controlpanel.io` (20 parts)
 - `sets/smigacz/` — `smigacz.io` (11 parts), plus a rendered `smigacz.png` and printable `smigacz.pdf` instructions
-- `sets/tank/` — `Czołg.io` (59 parts, Polish for "tank"), plus printable `czolg-3.pdf` instructions
+- `sets/tank/` — `Czołg.io` (59 parts, Polish for "tank"), plus printable `czolg.pdf` instructions
 
 ## File formats
 
