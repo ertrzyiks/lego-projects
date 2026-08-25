@@ -1,0 +1,35 @@
+---
+interface Props {
+  difficulty: number;
+}
+
+const { difficulty } = Astro.props;
+const levels = [1, 2, 3];
+---
+
+<span class="difficulty" role="img" aria-label={`Poziom trudności: ${difficulty} z 3`}>
+  {levels.map((level) => (
+    <span class={`difficulty__dot ${level <= difficulty ? 'difficulty__dot--filled' : ''}`} aria-hidden="true" />
+  ))}
+</span>
+
+<style>
+  .difficulty {
+    display: inline-flex;
+    gap: 0.3rem;
+    vertical-align: middle;
+  }
+
+  .difficulty__dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-muted);
+    background: transparent;
+  }
+
+  .difficulty__dot--filled {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+</style>

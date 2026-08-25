@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PdfViewer from '../../components/PdfViewer.astro';
+import DifficultyDots from '../../components/DifficultyDots.astro';
 import { getProjects, type Project } from '../../data/projects';
 
 interface Props {
@@ -29,6 +30,9 @@ const { project } = Astro.props;
   {project.totalParts !== null && (
     <p class="project-detail__meta">Liczba elementów: {project.totalParts}</p>
   )}
+  <p class="project-detail__meta">
+    Poziom trudności: <DifficultyDots difficulty={project.difficulty} />
+  </p>
 
   <section class="instructions">
     <h2>Instrukcja</h2>

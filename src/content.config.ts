@@ -9,6 +9,7 @@ const sets = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/sets' }),
   schema: z.object({
     title: z.string(),
+    difficulty: z.number().int().min(1).max(3),
   }),
 });
 

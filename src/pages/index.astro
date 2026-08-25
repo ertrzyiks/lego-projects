@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import DifficultyDots from '../components/DifficultyDots.astro';
 import { getProjects } from '../data/projects';
 
 const projects = await getProjects();
@@ -20,6 +21,9 @@ const projects = await getProjects();
           {project.totalParts !== null && (
             <p class="project-card__meta">Liczba elementów: {project.totalParts}</p>
           )}
+          <p class="project-card__meta">
+            Poziom trudności: <DifficultyDots difficulty={project.difficulty} />
+          </p>
         </a>
       </li>
     ))}
