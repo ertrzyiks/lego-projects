@@ -1,0 +1,180 @@
+---
+interface Props {
+  pdfUrl: string;
+}
+
+const { pdfUrl } = Astro.props;
+---
+
+<div class="pdf-viewer" data-pdf-url={pdfUrl} hidden>
+  <div class="pdf-viewer__frame">
+    <button type="button" class="pdf-viewer__arrow pdf-viewer__arrow--prev" aria-label="Poprzedni krok" disabled>‹</button>
+    <canvas class="pdf-viewer__canvas"></canvas>
+    <button type="button" class="pdf-viewer__arrow pdf-viewer__arrow--next" aria-label="Następny krok" disabled>›</button>
+  </div>
+
+  <p class="pdf-viewer__status">
+    Krok <span class="pdf-viewer__current">1</span> z <span class="pdf-viewer__total">…</span>
+  </p>
+
+  <input
+    type="range"
+    class="pdf-viewer__slider"
+    min="1"
+    value="1"
+    step="1"
+    list="pdf-viewer-steps"
+    aria-label="Wybierz krok instrukcji"
+  />
+  <datalist class="pdf-viewer__steps" id="pdf-viewer-steps"></datalist>
+</div>
+
+<p class="pdf-viewer__fallback">
+  Jeśli podgląd się nie załaduje, <a href={pdfUrl}>pobierz instrukcję PDF</a>.
+</p>
+
+<style>
+  .pdf-viewer[hidden] {
+    display: none;
+  }
+
+  .pdf-viewer__frame {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .pdf-viewer__canvas {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: #fff;
+  }
+
+  .pdf-viewer__arrow {
+    flex: 0 0 auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-size: 1.25rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .pdf-viewer__arrow:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .pdf-viewer__arrow:not(:disabled):hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .pdf-viewer__status {
+    text-align: center;
+    color: var(--color-muted);
+    margin: 0.75rem 0 0.5rem;
+  }
+
+  .pdf-viewer__slider {
+    display: block;
+    width: 100%;
+    accent-color: var(--color-accent);
+  }
+
+  .pdf-viewer__fallback {
+    color: var(--color-muted);
+    font-size: 0.875rem;
+  }
+</style>
+
+<script>
+  import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
+  import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
+  import workerSrc from 'pdfjs-dist/build/pdf.worker.mjs?url';
+
+  GlobalWorkerOptions.workerSrc = workerSrc;
+
+  document.querySelectorAll<HTMLElement>('.pdf-viewer').forEach((viewer) => {
+    const pdfUrl = viewer.dataset.pdfUrl;
+    if (!pdfUrl) return;
+
+    const canvas = viewer.querySelector<HTMLCanvasElement>('.pdf-viewer__canvas');
+    const prevButton = viewer.querySelector<HTMLButtonElement>('.pdf-viewer__arrow--prev');
+    const nextButton = viewer.querySelector<HTMLButtonElement>('.pdf-viewer__arrow--next');
+    const slider = viewer.querySelector<HTMLInputElement>('.pdf-viewer__slider');
+    const currentLabel = viewer.querySelector('.pdf-viewer__current');
+    const totalLabel = viewer.querySelector('.pdf-viewer__total');
+    const stepList = viewer.querySelector<HTMLDataListElement>('.pdf-viewer__steps');
+    const ctx = canvas?.getContext('2d');
+
+    if (!canvas || !prevButton || !nextButton || !slider || !currentLabel || !totalLabel || !stepList || !ctx) {
+      return;
+    }
+
+    let pdfDoc: PDFDocumentProxy | null = null;
+    let currentPage = 1;
+    let renderTask: RenderTask | null = null;
+
+    async function renderPage(pageNumber: number) {
+      if (!pdfDoc) return;
+      const page = await pdfDoc.getPage(pageNumber);
+      const viewport = page.getViewport({ scale: 1.5 });
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      renderTask?.cancel();
+      renderTask = page.render({ canvasContext: ctx, viewport });
+      try {
+        await renderTask.promise;
+      } catch (error) {
+        if ((error as { name?: string })?.name !== 'RenderingCancelledException') {
+          throw error;
+        }
+      }
+    }
+
+    function updateControls() {
+      if (!pdfDoc) return;
+      currentLabel.textContent = String(currentPage);
+      slider.value = String(currentPage);
+      prevButton.disabled = currentPage <= 1;
+      nextButton.disabled = currentPage >= pdfDoc.numPages;
+    }
+
+    async function goToPage(pageNumber: number) {
+      if (!pdfDoc) return;
+      currentPage = Math.min(Math.max(pageNumber, 1), pdfDoc.numPages);
+      updateControls();
+      await renderPage(currentPage);
+    }
+
+    prevButton.addEventListener('click', () => goToPage(currentPage - 1));
+    nextButton.addEventListener('click', () => goToPage(currentPage + 1));
+    slider.addEventListener('input', () => goToPage(Number(slider.value)));
+
+    getDocument({ url: pdfUrl })
+      .promise.then(async (doc) => {
+        pdfDoc = doc;
+        slider.max = String(doc.numPages);
+        totalLabel.textContent = String(doc.numPages);
+        for (let i = 1; i <= doc.numPages; i += 1) {
+          const option = document.createElement('option');
+          option.value = String(i);
+          stepList.appendChild(option);
+        }
+        viewer.hidden = false;
+        await goToPage(1);
+      })
+      .catch((error) => {
+        console.error('Nie udało się załadować podglądu PDF', error);
+      });
+  });
+</script>

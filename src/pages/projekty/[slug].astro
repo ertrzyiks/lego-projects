@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import PdfViewer from '../../components/PdfViewer.astro';
 import { getProjects, type Project } from '../../data/projects';
 
 interface Props {
@@ -35,13 +36,7 @@ const { project } = Astro.props;
       <>
         <a class="download-button" href={project.pdf} download>Pobierz instrukcję PDF</a>
         <div class="pdf-preview">
-          <object data={project.pdf} type="application/pdf">
-            <p>
-              Twoja przeglądarka nie obsługuje podglądu PDF.
-              {' '}
-              <a href={project.pdf}>Pobierz plik, aby go zobaczyć.</a>
-            </p>
-          </object>
+          <PdfViewer pdfUrl={project.pdf} />
         </div>
       </>
     ) : (

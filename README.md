@@ -2,7 +2,10 @@
 
 Static Astro site listing the LEGO models archived in `sets/`. Every page is
 generated at build time — there is no server runtime, no API routes, no
-client-side framework.
+client-side framework. The one exception is the PDF instructions viewer
+(`src/components/PdfViewer.astro`), which uses `pdfjs-dist` to render PDF
+pages to a `<canvas>` in the browser, with prev/next arrows and a step
+slider.
 
 ## How it works
 

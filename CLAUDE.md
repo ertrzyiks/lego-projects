@@ -45,8 +45,10 @@ Current builds:
 ## The Astro site (repo root)
 
 Static site (`output: 'static'`, no adapter, no server runtime) built with
-Astro and pnpm, deployed to Cloudflare Pages. Full details, dev/build
-commands, and the Cloudflare project settings are in `README.md`.
+Astro and pnpm, deployed to Cloudflare Pages. Every page is prerendered HTML;
+the only client-side JavaScript is the PDF viewer described below. Full
+details, dev/build commands, and the Cloudflare project settings are in
+`README.md`.
 
 Per-set copy lives in the `sets` content collection: `src/content/sets/<slug>.md`,
 one file per `sets/<slug>/` folder, with a `title` frontmatter field (schema in
@@ -64,5 +66,11 @@ generated output — never edit it directly or commit it; it's gitignored and
 gets rebuilt from `sets/` every time.
 
 Detail pages (`/projekty/[slug]/`) render the PDF both as a plain download
-link and inline via `<object type="application/pdf">` — no JavaScript, no
-PDF.js.
+link and as a custom step-by-step viewer, `src/components/PdfViewer.astro`:
+prev/next arrows plus a range slider (with a `<datalist>` tick per page) step
+through the PDF's pages, each rendered to a `<canvas>` on the fly via
+`pdfjs-dist` in the browser (no PDF pre-rasterization at build time — the
+client fetches the PDF and renders whichever page is current). This is the one
+piece of client-side JavaScript on the site; the viewer stays `hidden` until
+the PDF's page count is known, falling back to the plain download link if it
+never loads.
