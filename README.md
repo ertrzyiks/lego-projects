@@ -42,13 +42,18 @@ pnpm build
 
 Output goes to `dist/`.
 
-## Deploying to Cloudflare Pages
+## Deploying to Cloudflare
 
-Cloudflare Pages is connected to this repository and deploys automatically on
-push. Its project settings are:
+Cloudflare is connected to this repository and deploys automatically on push,
+via Wrangler's static-assets deployment (Cloudflare Pages has been folded
+into Workers). Its project settings are:
 
 - **Root directory**: `/` (repo root)
 - **Build command**: `pnpm install && pnpm build`
 - **Build output directory**: `dist`
 
-No adapter or Pages Functions are needed since the output is fully static.
+`wrangler.jsonc` at the repo root is what makes this a static-assets deploy
+rather than a Worker script: it has no `main` entry point, just
+`assets.directory` pointing at `dist/`. Without it, Wrangler errors with
+"Missing entry-point to Worker script or to assets directory". No adapter or
+Pages Functions are needed since the output is fully static.
