@@ -38,8 +38,8 @@ Current builds:
   inside.
 - To add a new build, create a new folder under `sets/<name>/` with its exported `.io` (and
   optionally a `.pdf` instructions file), matching the pattern of the existing folders, then add
-  a Polish title for it in `src/data/projects.ts` (see below) — the website picks it up
-  automatically on the next build.
+  `src/content/sets/<name>.md` with a Polish `title` in its frontmatter (see below) — the website
+  picks it up automatically on the next build.
 - `.DS_Store` files are macOS Finder metadata and are gitignored — don't commit them.
 
 ## The Astro site (repo root)
@@ -48,13 +48,17 @@ Static site (`output: 'static'`, no adapter, no server runtime) built with
 Astro and pnpm, deployed to Cloudflare Pages. Full details, dev/build
 commands, and the Cloudflare project settings are in `README.md`.
 
-The key thing to know: nothing in `src/` reads `.io`/`.pdf` files directly.
-`scripts/prepare-assets.mjs` runs before both `pnpm dev` and `pnpm build`
-(via `predev`/`prebuild` hooks), unzips each `sets/*/*.io` to pull out its
-embedded `thumbnail.png` and part count, copies any sibling `.pdf` into
-`public/`, and writes `src/data/sets-manifest.json`. `src/data/projects.ts`
-merges that generated manifest with hand-written Polish titles (keyed by the
-`sets/` folder name) to produce the list every page renders from. Everything
+Per-set copy lives in the `sets` content collection: `src/content/sets/<slug>.md`,
+one file per `sets/<slug>/` folder, with a `title` frontmatter field (schema in
+`src/content.config.ts`). Everything else about a set — thumbnail, part count,
+whether a PDF exists — is derived at build time, not hand-authored: nothing in
+`src/` reads `.io`/`.pdf` files directly. `scripts/prepare-assets.mjs` runs
+before both `pnpm dev` and `pnpm build` (via `predev`/`prebuild` hooks),
+unzips each `sets/*/*.io` to pull out its embedded `thumbnail.png` and part
+count, copies any sibling `.pdf` into `public/`, and writes
+`src/data/sets-manifest.json`. `src/data/projects.ts` merges that generated
+manifest with the content collection's titles (joined on `sets/` folder name
+== markdown filename) to produce the list every page renders from. Everything
 under `public/thumbnails`, `public/pdfs`, and `sets-manifest.json` is
 generated output — never edit it directly or commit it; it's gitignored and
 gets rebuilt from `sets/` every time.

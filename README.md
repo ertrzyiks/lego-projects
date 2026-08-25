@@ -15,13 +15,14 @@ client-side framework.
 - reads the part count out of the `.io`'s `.info` metadata
 
 and writes the result to `src/data/sets-manifest.json`, which
-`src/data/projects.ts` combines with hand-written Polish titles to produce the
-`projects` list used by the pages. All of this is generated output — nothing
-under `public/thumbnails`, `public/pdfs`, or `src/data/sets-manifest.json` is
-committed; it's rebuilt from `sets/` every time.
+`src/data/projects.ts` combines with the `sets` content collection
+(`src/content/sets/*.md`) to produce the `projects` list used by the pages.
+All of this is generated output — nothing under `public/thumbnails`,
+`public/pdfs`, or `src/data/sets-manifest.json` is committed; it's rebuilt
+from `sets/` every time.
 
-To give a new set a title, add an entry to the `titles` map in
-`src/data/projects.ts` keyed by its folder name under `sets/`.
+To give a new set a title, add `src/content/sets/<slug>.md` with a `title`
+frontmatter field, where `<slug>` matches its folder name under `sets/`.
 
 ## Development
 
