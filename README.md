@@ -1,13 +1,13 @@
 # Projekty LEGO — website
 
-Static Astro site listing the LEGO models archived in `../sets`. Every page is
+Static Astro site listing the LEGO models archived in `sets/`. Every page is
 generated at build time — there is no server runtime, no API routes, no
 client-side framework.
 
 ## How it works
 
 `scripts/prepare-assets.mjs` runs before `astro dev` / `astro build` (via the
-`predev` / `prebuild` lifecycle hooks). For every folder under `../sets/` it:
+`predev` / `prebuild` lifecycle hooks). For every folder under `sets/` it:
 
 - unzips the `.io` (BrickLink Studio) file and copies its internal
   `thumbnail.png` into `public/thumbnails/<slug>.png`
@@ -18,7 +18,7 @@ and writes the result to `src/data/sets-manifest.json`, which
 `src/data/projects.ts` combines with hand-written Polish titles to produce the
 `projects` list used by the pages. All of this is generated output — nothing
 under `public/thumbnails`, `public/pdfs`, or `src/data/sets-manifest.json` is
-committed; it's rebuilt from `../sets` every time.
+committed; it's rebuilt from `sets/` every time.
 
 To give a new set a title, add an entry to the `titles` map in
 `src/data/projects.ts` keyed by its folder name under `sets/`.
@@ -43,10 +43,8 @@ Output goes to `dist/`.
 Cloudflare Pages is connected to this repository and deploys automatically on
 push. Its project settings are:
 
-- **Root directory**: `website`
+- **Root directory**: `/` (repo root)
 - **Build command**: `pnpm install && pnpm build`
 - **Build output directory**: `dist`
 
-Cloudflare checks out the whole repository even with a `website` root
-directory, so `../sets` is present when `prepare-assets.mjs` runs. No adapter
-or Pages Functions are needed since the output is fully static.
+No adapter or Pages Functions are needed since the output is fully static.

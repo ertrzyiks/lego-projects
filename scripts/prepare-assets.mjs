@@ -1,4 +1,4 @@
-// Build-time only: reads the LEGO Studio project archive in ../sets and
+// Build-time only: reads the LEGO Studio project archive in sets/ and
 // materializes the assets the site needs into public/, plus a manifest
 // consumed by src/data/projects.ts. Runs before both `astro dev` and
 // `astro build` — never at request time, so it has no bearing on the
@@ -9,11 +9,11 @@ import { fileURLToPath } from 'node:url';
 import AdmZip from 'adm-zip';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const websiteRoot = join(__dirname, '..');
-const setsRoot = join(websiteRoot, '..', 'sets');
-const thumbnailsDir = join(websiteRoot, 'public', 'thumbnails');
-const pdfsDir = join(websiteRoot, 'public', 'pdfs');
-const manifestPath = join(websiteRoot, 'src', 'data', 'sets-manifest.json');
+const projectRoot = join(__dirname, '..');
+const setsRoot = join(projectRoot, 'sets');
+const thumbnailsDir = join(projectRoot, 'public', 'thumbnails');
+const pdfsDir = join(projectRoot, 'public', 'pdfs');
+const manifestPath = join(projectRoot, 'src', 'data', 'sets-manifest.json');
 
 rmSync(thumbnailsDir, { recursive: true, force: true });
 rmSync(pdfsDir, { recursive: true, force: true });

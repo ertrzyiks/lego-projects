@@ -5,9 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## What this repository is
 
 A personal archive of LEGO digital models designed in [BrickLink Studio](https://www.bricklink.com/v3/studio/download.page)
-(Stud.io), organized one subfolder per build under `sets/`, plus a static Astro
-website (`website/`) that publishes that archive as a browsable, downloadable
-catalog.
+(Stud.io), organized one subfolder per build under `sets/`. The repo root is
+also a static Astro site (see below) that publishes that archive as a
+browsable, downloadable catalog.
 
 Current builds:
 - `sets/controlpanel/` — `controlpanel.io` (20 parts)
@@ -38,27 +38,26 @@ Current builds:
   inside.
 - To add a new build, create a new folder under `sets/<name>/` with its exported `.io` (and
   optionally a `.pdf` instructions file), matching the pattern of the existing folders, then add
-  a Polish title for it in `website/src/data/projects.ts` (see below) — the website picks it up
+  a Polish title for it in `src/data/projects.ts` (see below) — the website picks it up
   automatically on the next build.
 - `.DS_Store` files are macOS Finder metadata and are gitignored — don't commit them.
 
-## `website/` — the Astro site
+## The Astro site (repo root)
 
 Static site (`output: 'static'`, no adapter, no server runtime) built with
 Astro and pnpm, deployed to Cloudflare Pages. Full details, dev/build
-commands, and the Cloudflare project settings are in `website/README.md`.
+commands, and the Cloudflare project settings are in `README.md`.
 
-The key thing to know: nothing in `website/` reads `.io`/`.pdf` files
-directly. `website/scripts/prepare-assets.mjs` runs before both `pnpm dev`
-and `pnpm build` (via `predev`/`prebuild` hooks), unzips each `sets/*/*.io`
-to pull out its embedded `thumbnail.png` and part count, copies any sibling
-`.pdf` into `website/public/`, and writes `website/src/data/sets-manifest.json`.
-`website/src/data/projects.ts` merges that generated manifest with
-hand-written Polish titles (keyed by the `sets/` folder name) to produce the
-list every page renders from. Everything under `website/public/thumbnails`,
-`website/public/pdfs`, and `sets-manifest.json` is generated output — never
-edit it directly or commit it; it's gitignored and gets rebuilt from `sets/`
-every time.
+The key thing to know: nothing in `src/` reads `.io`/`.pdf` files directly.
+`scripts/prepare-assets.mjs` runs before both `pnpm dev` and `pnpm build`
+(via `predev`/`prebuild` hooks), unzips each `sets/*/*.io` to pull out its
+embedded `thumbnail.png` and part count, copies any sibling `.pdf` into
+`public/`, and writes `src/data/sets-manifest.json`. `src/data/projects.ts`
+merges that generated manifest with hand-written Polish titles (keyed by the
+`sets/` folder name) to produce the list every page renders from. Everything
+under `public/thumbnails`, `public/pdfs`, and `sets-manifest.json` is
+generated output — never edit it directly or commit it; it's gitignored and
+gets rebuilt from `sets/` every time.
 
 Detail pages (`/projekty/[slug]/`) render the PDF both as a plain download
 link and inline via `<object type="application/pdf">` — no JavaScript, no
