@@ -1,0 +1,20 @@
+{
+  "name": "lego-projects-website",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prepare-assets": "node scripts/prepare-assets.mjs",
+    "predev": "node scripts/prepare-assets.mjs",
+    "dev": "astro dev",
+    "prebuild": "node scripts/prepare-assets.mjs",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "adm-zip": "^0.6.0",
+    "astro": "^7.2.6"
+  },
+  "packageManager": "pnpm@11.23.0+sha256.78dcbf44f40cef50d1f4b535ca9961a30edb4b13c420c360bf4068d424a41bc4"
+}

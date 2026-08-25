@@ -1,0 +1,25 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { projects } from '../data/projects';
+---
+
+<BaseLayout title="Projekty LEGO">
+  <h1>Moje projekty LEGO</h1>
+  <ul class="project-grid">
+    {projects.map((project) => (
+      <li class="project-card">
+        <a href={`/projekty/${project.slug}/`}>
+          {project.thumbnail ? (
+            <img src={project.thumbnail} alt={project.title} loading="lazy" />
+          ) : (
+            <div class="project-card__placeholder">Brak miniatury</div>
+          )}
+          <h2>{project.title}</h2>
+          {project.totalParts !== null && (
+            <p class="project-card__meta">Liczba elementów: {project.totalParts}</p>
+          )}
+        </a>
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

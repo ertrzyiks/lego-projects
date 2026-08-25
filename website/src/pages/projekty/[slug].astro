@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { projects, getProject } from '../../data/projects';
+
+export function getStaticPaths() {
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const project = getProject(slug);
+
+if (!project) {
+  throw new Error(`Unknown project slug: ${slug}`);
+}
+---
+
+<BaseLayout title={`${project.title} — Projekty LEGO`}>
+  <a class="back-link" href="/">← Wróć do listy projektów</a>
+  <h1>{project.title}</h1>
+
+  {project.thumbnail && (
+    <img class="project-detail__image" src={project.thumbnail} alt={project.title} />
+  )}
+
+  {project.totalParts !== null && (
+    <p class="project-detail__meta">Liczba elementów: {project.totalParts}</p>
+  )}
+
+  <section class="instructions">
+    <h2>Instrukcja</h2>
+    {project.pdf ? (
+      <>
+        <a class="download-button" href={project.pdf} download>Pobierz instrukcję PDF</a>
+        <div class="pdf-preview">
+          <object data={project.pdf} type="application/pdf">
+            <p>
+              Twoja przeglądarka nie obsługuje podglądu PDF.
+              {' '}
+              <a href={project.pdf}>Pobierz plik, aby go zobaczyć.</a>
+            </p>
+          </object>
+        </div>
+      </>
+    ) : (
+      <p>Instrukcja PDF nie jest jeszcze dostępna dla tego modelu.</p>
+    )}
+  </section>
+</BaseLayout>
