@@ -15,7 +15,11 @@
   "dependencies": {
     "adm-zip": "^0.6.0",
     "astro": "^7.2.6",
-    "pdfjs-dist": "^6.2.108"
+    "pdfjs-dist": "^6.2.108",
+    "three": "^0.185.1"
   },
-  "packageManager": "pnpm@11.23.0+sha256.78dcbf44f40cef50d1f4b535ca9961a30edb4b13c420c360bf4068d424a41bc4"
+  "packageManager": "pnpm@11.23.0+sha256.78dcbf44f40cef50d1f4b535ca9961a30edb4b13c420c360bf4068d424a41bc4",
+  "devDependencies": {
+    "@types/three": "^0.185.4"
+  }
 }

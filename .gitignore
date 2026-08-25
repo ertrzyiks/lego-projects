@@ -9,4 +9,5 @@ dist/
 # `pnpm dev` / `pnpm build`, not a source of truth.
 public/thumbnails/
 public/pdfs/
+public/models/
 src/data/sets-manifest.json
