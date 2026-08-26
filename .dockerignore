@@ -1,0 +1,10 @@
+.git
+.DS_Store
+.pnpm-store/
+node_modules/
+dist/
+.astro/
+public/thumbnails/
+public/pdfs/
+public/models/
+src/data/sets-manifest.json

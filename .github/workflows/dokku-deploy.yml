@@ -1,0 +1,61 @@
+name: Dokku Deploy (kuga)
+
+# Builds the site's Docker image (see Dockerfile), pushes it to GitHub Container
+# Registry, then dispatches ertrzyiks/ertrzyiks.me's dokku_deploy.yml to actually
+# deploy it to the "kuga" Dokku app — see that workflow for the receiving end.
+#
+# One-time setup required before this can succeed:
+#   - This repo needs a `DOKKU_DEPLOY_DISPATCH_TOKEN` secret: a GitHub PAT (classic
+#     `repo` scope, or fine-grained with "Contents: write" + "Actions: read/write"
+#     on ertrzyiks/ertrzyiks.me) — the built-in GITHUB_TOKEN can't dispatch into a
+#     different repository.
+#   - The pushed ghcr.io/ertrzyiks/lego-projects/kuga image needs to be pullable
+#     from the Dokku host: either make the GHCR package public, or make sure the
+#     Dokku host is already `docker login`-ed to ghcr.io. dokku_deploy.yml doesn't
+#     authenticate anything itself.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/kuga:latest
+            ghcr.io/${{ github.repository }}/kuga:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger Dokku deploy of the "kuga" app
+        env:
+          GH_TOKEN: ${{ secrets.DOKKU_DEPLOY_DISPATCH_TOKEN }}
+        run: |
+          gh api repos/ertrzyiks/ertrzyiks.me/dispatches \
+            -f event_type=dokku-deploy \
+            -F 'client_payload[app]=kuga' \
+            -F "client_payload[image]=ghcr.io/${{ github.repository }}/kuga@${{ steps.build.outputs.digest }}"
