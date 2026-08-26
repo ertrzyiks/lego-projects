@@ -13,12 +13,15 @@ const projectRoot = join(__dirname, '..');
 const setsRoot = join(projectRoot, 'sets');
 const thumbnailsDir = join(projectRoot, 'public', 'thumbnails');
 const pdfsDir = join(projectRoot, 'public', 'pdfs');
+const modelsDir = join(projectRoot, 'public', 'models');
 const manifestPath = join(projectRoot, 'src', 'data', 'sets-manifest.json');
 
 rmSync(thumbnailsDir, { recursive: true, force: true });
 rmSync(pdfsDir, { recursive: true, force: true });
+rmSync(modelsDir, { recursive: true, force: true });
 mkdirSync(thumbnailsDir, { recursive: true });
 mkdirSync(pdfsDir, { recursive: true });
+mkdirSync(modelsDir, { recursive: true });
 
 const manifest = [];
 
@@ -52,10 +55,16 @@ for (const slug of readdirSync(setsRoot).sort()) {
     writeFileSync(join(pdfsDir, `${slug}.pdf`), readFileSync(join(folder, pdfFile)));
   }
 
+  const modelEntry = zip.getEntry('model.ldr');
+  if (modelEntry) {
+    writeFileSync(join(modelsDir, `${slug}.ldr`), zip.readFile(modelEntry));
+  }
+
   manifest.push({
     slug,
     hasThumbnail: Boolean(thumbnailEntry),
     hasPdf: Boolean(pdfFile),
+    hasModel: Boolean(modelEntry),
     totalParts,
   });
 }

@@ -1,0 +1,160 @@
+---
+interface Props {
+  modelUrl: string;
+}
+
+const { modelUrl } = Astro.props;
+---
+
+<div class="model-viewer" data-model-url={modelUrl}>
+  <canvas class="model-viewer__canvas"></canvas>
+  <p class="model-viewer__status">Ładowanie modelu 3D…</p>
+  <p class="model-viewer__hint">Przeciągnij, aby obrócić. Przewiń, aby przybliżyć.</p>
+</div>
+
+<style>
+  .model-viewer {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: #e8e8ea;
+  }
+
+  .model-viewer__canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+  }
+
+  .model-viewer__canvas:active {
+    cursor: grabbing;
+  }
+
+  .model-viewer__status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    color: var(--color-muted);
+    background: #e8e8ea;
+  }
+
+  .model-viewer__status[hidden] {
+    display: none;
+  }
+
+  .model-viewer__hint {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 0.75rem;
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--color-muted);
+    background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.4rem;
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+  import { LDrawLoader } from 'three/examples/jsm/loaders/LDrawLoader.js';
+  import { LDrawConditionalLineMaterial } from 'three/examples/jsm/materials/LDrawConditionalLineMaterial.js';
+
+  // Prototype: hotlinking part geometry from a public mirror of the LDraw
+  // parts library on every load. Fine for a prototype, not for production —
+  // a real rollout should self-host (a subset of) this library.
+  const LDRAW_PARTS_LIBRARY =
+    'https://cdn.jsdelivr.net/gh/gkjohnson/ldraw-parts-library@master/complete/ldraw/';
+
+  document.querySelectorAll<HTMLElement>('.model-viewer').forEach((container) => {
+    const modelUrl = container.dataset.modelUrl;
+    const canvas = container.querySelector<HTMLCanvasElement>('.model-viewer__canvas');
+    const status = container.querySelector<HTMLElement>('.model-viewer__status');
+    if (!modelUrl || !canvas || !status) return;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xe8e8ea);
+
+    const camera = new THREE.PerspectiveCamera(45, 1, 1, 10000);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enablePan = false;
+    controls.minDistance = 10;
+    controls.maxDistance = 5000;
+
+    scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+    const key = new THREE.DirectionalLight(0xffffff, 0.9);
+    key.position.set(1, 2, 3);
+    scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.4);
+    fill.position.set(-2, -1, -1);
+    scene.add(fill);
+
+    function resize() {
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      if (width === 0 || height === 0) return;
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    new ResizeObserver(resize).observe(container);
+    resize();
+
+    let animating = true;
+    function animate() {
+      if (!animating) return;
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    const loader = new LDrawLoader();
+    loader.setPartsLibraryPath(LDRAW_PARTS_LIBRARY);
+    loader.setConditionalLineMaterial(LDrawConditionalLineMaterial);
+    loader.smoothNormals = true;
+
+    loader
+      .preloadMaterials(`${LDRAW_PARTS_LIBRARY}LDConfig.ldr`)
+      .then(() => loader.loadAsync(modelUrl))
+      .then((model) => {
+        // LDraw's Y axis points down; flip the whole model to match
+        // three.js's Y-up convention.
+        model.rotation.x = Math.PI;
+        scene.add(model);
+
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3()).length();
+        const center = box.getCenter(new THREE.Vector3());
+        model.position.sub(center);
+
+        const distance = Math.max(size, 50) * 1.2;
+        camera.position.set(distance, distance * 0.6, distance);
+        camera.near = distance / 100;
+        camera.far = distance * 100;
+        camera.updateProjectionMatrix();
+        controls.target.set(0, 0, 0);
+        controls.update();
+
+        status.hidden = true;
+      })
+      .catch((error) => {
+        console.error('Nie udało się załadować modelu 3D', error);
+        status.textContent = 'Nie udało się załadować modelu 3D.';
+        animating = false;
+      });
+  });
+</script>

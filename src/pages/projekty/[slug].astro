@@ -2,7 +2,12 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PdfViewer from '../../components/PdfViewer.astro';
 import DifficultyDots from '../../components/DifficultyDots.astro';
+import ModelViewer from '../../components/ModelViewer.astro';
 import { getProjects, type Project } from '../../data/projects';
+
+// Prototype: the 3D viewer is only wired up for smigacz for now (see
+// ModelViewer.astro) — not rolled out to every set yet.
+const MODEL_VIEWER_PROTOTYPE_SLUGS = new Set(['smigacz']);
 
 interface Props {
   project: Project;
@@ -33,6 +38,13 @@ const { project } = Astro.props;
   <p class="project-detail__meta">
     Poziom trudności: <DifficultyDots difficulty={project.difficulty} />
   </p>
+
+  {project.model && MODEL_VIEWER_PROTOTYPE_SLUGS.has(project.slug) && (
+    <section class="model-3d">
+      <h2>Podgląd 3D (prototyp)</h2>
+      <ModelViewer modelUrl={project.model} />
+    </section>
+  )}
 
   <section class="instructions">
     <h2>Instrukcja</h2>

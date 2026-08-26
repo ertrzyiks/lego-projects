@@ -8,6 +8,7 @@ export interface Project {
   totalParts: number | null;
   thumbnail: string | null;
   pdf: string | null;
+  model: string | null;
 }
 
 export async function getProjects(): Promise<Project[]> {
@@ -23,6 +24,7 @@ export async function getProjects(): Promise<Project[]> {
       totalParts: entry.totalParts,
       thumbnail: entry.hasThumbnail ? `/thumbnails/${entry.slug}.png` : null,
       pdf: entry.hasPdf ? `/pdfs/${entry.slug}.pdf` : null,
+      model: entry.hasModel ? `/models/${entry.slug}.ldr` : null,
     };
   });
 }
