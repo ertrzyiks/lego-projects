@@ -138,13 +138,14 @@ h1 {
   color: var(--color-muted);
 }
 
-.model-3d,
+.model-3d-link,
 .instructions {
   margin-top: 2rem;
 }
 
 .model-3d {
   max-width: 32rem;
+  margin-top: 1.5rem;
 }
 
 .download-button {

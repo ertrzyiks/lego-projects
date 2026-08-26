@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import ModelViewer from '../../../components/ModelViewer.astro';
+import { getProjects, type Project } from '../../../data/projects';
+
+interface Props {
+  project: Project;
+}
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+---
+
+<BaseLayout title={`Model 3D: ${project.title} — Projekty LEGO`}>
+  <a class="back-link" href={`/projekty/${project.slug}/`}>← Wróć do „{project.title}”</a>
+  <h1>Model 3D: {project.title}</h1>
+
+  {project.model ? (
+    <div class="model-3d">
+      <ModelViewer modelUrl={project.model} />
+    </div>
+  ) : (
+    <p>Model 3D nie jest jeszcze dostępny dla tego zestawu.</p>
+  )}
+</BaseLayout>
