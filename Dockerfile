@@ -13,4 +13,9 @@ RUN pnpm build
 
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
+# nginx's stock mime.types has no entry for .mjs (e.g. pdfjs-dist's worker
+# chunk), so it falls back to application/octet-stream — which browsers
+# reject for module scripts/workers ("Failed to load module script: ...
+# non-JavaScript MIME type"). Map it alongside .js.
+RUN sed -i '/application\/javascript *js;/a\    application/javascript                           mjs;' /etc/nginx/mime.types
 EXPOSE 80
