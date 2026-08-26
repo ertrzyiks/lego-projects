@@ -169,10 +169,20 @@ const { pdfUrl } = Astro.props;
     nextButton.addEventListener('click', () => goToPage(currentPage + 1));
     slider.addEventListener('input', () => goToPage(Number(slider.value)));
 
-    viewer.addEventListener('keydown', (event) => {
+    // Document-level (not just the viewer) so the arrow keys work no matter
+    // where focus currently is on the page, not only while a viewer control
+    // itself is focused.
+    document.addEventListener('keydown', (event) => {
+      if (!pdfDoc || viewer.hidden) return;
+
       // The slider already moves on its own arrow-key handling, which fires
       // our 'input' listener above — handling it again here would double-step.
       if (event.target === slider) return;
+
+      // Don't hijack arrow keys from an unrelated focused form control
+      // elsewhere on the page (e.g. a future text input).
+      const targetTag = (event.target as HTMLElement)?.tagName;
+      if (targetTag === 'INPUT' || targetTag === 'TEXTAREA' || targetTag === 'SELECT') return;
 
       if (event.key === 'ArrowLeft') {
         event.preventDefault();
